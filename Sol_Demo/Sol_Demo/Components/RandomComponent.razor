@@ -1,0 +1,18 @@
+﻿@page "/comp/random"
+@inject IJSRuntime jsRuntime
+@inject RandomHelper randomHelper
+<h3>RandomComponent</h3>
+
+
+Random number is : <span id="spanRandom"></span>
+
+<button class="btn btn-primary" @onclick="GenerateRandomNoEvent">Random No Generate</button>
+
+@code {
+
+    private async Task GenerateRandomNoEvent()
+    {
+        await jsRuntime.InvokeVoidAsync(identifier: "onDemo", 100, DotNetObjectReference.Create(randomHelper));
+    }
+
+}
