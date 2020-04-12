@@ -8,11 +8,65 @@ Random number is : <span id="spanRandom"></span>
 
 <button class="btn btn-primary" @onclick="GenerateRandomNoEvent">Random No Generate</button>
 
+<button class="btn btn-primary" onclick="updateMessageJs()">Get Value from JS to Blazor</button>
+
+<button class="btn btn-secondary" onclick="getArrayOfDataJs()">return Value from C# to Js</button>
+
+<h1>@Message</h1>
+
 @code {
+
+    public  String Message { get; set; } = "Hello C#";
+
+    // Get message from Javascript
+    // Problem Statement
+    // We can not call non static property on static method.
+    // So We can get data from Action delegate
+    //https://docs.microsoft.com/en-us/aspnet/core/blazor/call-dotnet-from-javascript?view=aspnetcore-3.1#component-instance-method-call
+    public static Action<Task<String>> ActionObj { get; set; }
+
+    
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            ActionObj = async (leJavascriptValue) =>
+            {
+                Message = await leJavascriptValue;
+
+                // By Pass Dispatcher UI Thread
+                await InvokeAsync(() => StateHasChanged());
+
+            };
+
+          
+
+            StateHasChanged();
+        }
+    }
 
     private async Task GenerateRandomNoEvent()
     {
+        Message = "Kishor Naik";
         await jsRuntime.InvokeVoidAsync(identifier: "onDemo", 100, DotNetObjectReference.Create(randomHelper));
+    }
+
+    [JSInvokable]
+    public static Task OnGetValue(string str)
+    {
+        return Task.Run(() => {
+
+            ActionObj?.Invoke(Task.FromResult<String>(str));
+
+        });
+
+    }
+
+    [JSInvokable]
+    public static Task<int[]> ReturnArrayAsync()
+    {
+        return Task.FromResult(new int[] { 1, 2, 3 });
     }
 
 }
